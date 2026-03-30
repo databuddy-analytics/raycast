@@ -1,6 +1,6 @@
 import { Action, ActionPanel, Form, Icon, popToRoot, showToast, Toast, type LaunchProps } from "@raycast/api";
-import { useForm } from "@raycast/utils";
-import { createFlag, DASHBOARD_URL } from "./api";
+import { useCachedPromise, useForm } from "@raycast/utils";
+import { createFlag, DASHBOARD_URL, fetchOrganizationId } from "./api";
 
 interface FormValues {
   key: string;
@@ -14,6 +14,8 @@ interface FormValues {
 }
 
 export default function Command(props: LaunchProps<{ draftValues: FormValues }>) {
+  const { data: orgId, isLoading: loadingOrg } = useCachedPromise(fetchOrganizationId);
+
   const { handleSubmit, itemProps } = useForm<FormValues>({
     initialValues: {
       type: "boolean",
@@ -25,7 +27,8 @@ export default function Command(props: LaunchProps<{ draftValues: FormValues }>)
     async onSubmit(values) {
       const toast = await showToast({ style: Toast.Style.Animated, title: "Creating flag…" });
       try {
-        const flag = await createFlag({
+        if (!orgId) throw new Error("Organization not loaded yet. Please try again.");
+        const flag = await createFlag(orgId, {
           key: values.key.trim(),
           ...(values.name?.trim() ? { name: values.name.trim() } : {}),
           ...(values.description?.trim() ? { description: values.description.trim() } : {}),
@@ -60,6 +63,7 @@ export default function Command(props: LaunchProps<{ draftValues: FormValues }>)
 
   return (
     <Form
+      isLoading={loadingOrg}
       enableDrafts
       searchBarAccessory={<Form.LinkAccessory target={DASHBOARD_URL} text="Open Dashboard" />}
       actions={

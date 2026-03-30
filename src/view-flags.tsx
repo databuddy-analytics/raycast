@@ -1,10 +1,22 @@
 import { Action, ActionPanel, Icon, List, openExtensionPreferences } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
-import { DASHBOARD_URL, fetchFlags } from "./api";
+import { DASHBOARD_URL, fetchFlags, fetchOrganizationId } from "./api";
 import { FlagItem } from "./components/flags/flag-item";
 
 export default function Command() {
-  const { data: flags, isLoading, error, revalidate } = useCachedPromise(fetchFlags);
+  const { data: orgId, isLoading: loadingOrg, error: orgError } = useCachedPromise(fetchOrganizationId);
+
+  const {
+    data: flags,
+    isLoading: loadingFlags,
+    error: flagsError,
+    revalidate,
+  } = useCachedPromise(fetchFlags, [orgId ?? ""], {
+    execute: !!orgId,
+    keepPreviousData: true,
+  });
+
+  const error = orgError || flagsError;
 
   if (error) {
     const isAuth = error.message.includes("Invalid API key");
@@ -26,7 +38,7 @@ export default function Command() {
   }
 
   return (
-    <List isLoading={isLoading} isShowingDetail searchBarPlaceholder="Search flags...">
+    <List isLoading={loadingOrg || loadingFlags} isShowingDetail searchBarPlaceholder="Search flags...">
       {flags?.length === 0 && (
         <List.EmptyView
           icon={Icon.LightBulb}
