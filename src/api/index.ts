@@ -14,15 +14,7 @@ export {
   fetchLinkDevices,
   fetchLinkBrowsers,
 } from "./links";
-export {
-  fetchOrganizationId,
-  fetchFlags,
-  fetchFlag,
-  createFlag,
-  updateFlag,
-  deleteFlag,
-  toggleFlagStatus,
-} from "./flags";
+export { fetchFlags, fetchFlag, createFlag, updateFlag, deleteFlag, toggleFlagStatus } from "./flags";
 export { fetchFunnels, fetchFunnel, deleteFunnel, fetchFunnelAnalytics } from "./funnels";
 export { DATE_PRESETS } from "../types";
 export type {
